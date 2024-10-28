@@ -12,11 +12,12 @@ output "interface_endpoint_dns_names" {
 
 
 
-output "instance_id" {
-  value = module.ec2_instance.id
-}
-output "instance_private_ip" {
+
+output "hub_instance_private_ip" {
   value = module.ec2_instance.private_ip
+}
+output "spoke_a_instance_private_ip" {
+  value = module.spoke_a_instance.private_ip
 }
 
 

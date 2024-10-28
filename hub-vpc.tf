@@ -32,6 +32,7 @@ module "shared_services_vpc" {
 # 
 resource "aws_ec2_transit_gateway" "main_tgw" {
   description = "Main region Transit Gateway"
+  default_route_table_association = "disable"
 
   tags = merge(local.common_tags, {
     Name = "main-region-tgw"
@@ -57,9 +58,10 @@ resource "aws_route" "spoke_a_to_hub" {
 
 # attach service_provide_main VPC to transit gateway
 resource "aws_ec2_transit_gateway_vpc_attachment" "hub_vpc_attachment" {
+  subnet_ids         = module.shared_services_vpc.private_subnets
   transit_gateway_id = aws_ec2_transit_gateway.main_tgw.id
   vpc_id             = module.shared_services_vpc.vpc_id
-  subnet_ids         = module.shared_services_vpc.private_subnets
+  transit_gateway_default_route_table_association = "false"
 
   tags = merge(local.common_tags, {
     Name = "hub-vpc"
@@ -67,26 +69,25 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "hub_vpc_attachment" {
 
 }
 resource "aws_ec2_transit_gateway_vpc_attachment" "spoke_a_vpc_attachment" {
-  transit_gateway_id = aws_ec2_transit_gateway.main_tgw.id
   vpc_id             = module.spoke_a_vpc.vpc_id
+  transit_gateway_id = aws_ec2_transit_gateway.main_tgw.id
   subnet_ids         = module.spoke_a_vpc.private_subnets
+  transit_gateway_default_route_table_association = "false"
 
   tags = merge(local.common_tags, {
-    Name = "hub-vpc"
+    Name = "spoke-a-vpc"
   })
 
 }
 
 
-
-data "aws_ec2_transit_gateway_route_table" "main_tgw_default_route_table" {
-  filter {
-    name   = "default-association-route-table"
-    values = ["true"]
-  }
-  depends_on = [aws_ec2_transit_gateway.main_tgw]
-}
-
+# data "aws_ec2_transit_gateway_route_table" "main_tgw_default_route_table" {
+#   filter {
+#     name   = "default-association-route-table"
+#     values = ["true"]
+#   }
+#   depends_on = [aws_ec2_transit_gateway.main_tgw]
+# }
 
 resource "aws_ec2_transit_gateway_route_table" "shared_services_rt" {
   transit_gateway_id = aws_ec2_transit_gateway.main_tgw.id
@@ -111,26 +112,21 @@ resource "aws_ec2_transit_gateway_route_table_association" "spoke_a_association"
 resource "aws_ec2_transit_gateway_route" "hub_to_spoke_a" {
   destination_cidr_block         = local.spoke_a_vpc_cidr
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.shared_services_rt.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.hub_vpc_attachment.id
+   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spoke_a_vpc_attachment.id
 }
+
 
 resource "aws_ec2_transit_gateway_route" "spoke_a_to_hub" {
   destination_cidr_block         = local.shared_services_vpc_cidr
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.shared_services_rt.id
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spoke_a_vpc_attachment.id
+    transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.hub_vpc_attachment.id
 }
-
-
-
-
-
-
-
 
 
 
 
 /*
+
 
 ////////////////////////////////////////////////////////////
 
