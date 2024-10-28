@@ -43,12 +43,18 @@ locals {
     CostCenter  = var.cost_center
   }
     aws_services = {
-  "ecrapi" : {
-    "name" : "com.amazonaws.${var.main_region}.ecr.api"
+  # "ecrapi" : {
+  #   "name" : "com.amazonaws.${var.main_region}.ecr.api"
+  # }
+  # "ecrdkr" : {
+  #   "name" : "com.amazonaws.${var.main_region}.ecr.dkr"
+  # }
+  "sqs" : {
+    "name" : "com.amazonaws.${var.main_region}.sqs"
   }
-  "ecrdkr" : {
-    "name" : "com.amazonaws.${var.main_region}.ecr.dkr"
-  }
+  # "s3" : {
+  #   "name" : "com.amazonaws.${var.main_region}.s3"
+  # }
 
 }
 
