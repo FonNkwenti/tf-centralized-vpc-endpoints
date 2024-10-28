@@ -13,6 +13,19 @@ resource "aws_vpc_endpoint" "shared_interface_endpoints" {
     Name = "shared-${each.key}-interface-endpoint"
   }
 }
+# resource "aws_vpc_endpoint" "s3_interface_endpoints" {
+#   vpc_id                = module.shared_services_vpc.vpc_id
+#   ip_address_type     = "ipv4"
+#   vpc_endpoint_type   = "Interface"
+#   service_name        = "com.amazonaws.${var.main_region}.s3"
+#   security_group_ids  = [module.interface_endpoints_sg.security_group_id]
+#   private_dns_enabled = false
+#   subnet_ids          = module.shared_services_vpc.private_subnets
+
+#   tags = {
+#     Name = "s3-interface-endpoint"
+#   }
+# }
 
 
 module "interface_endpoints_sg" {
